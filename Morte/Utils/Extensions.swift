@@ -31,7 +31,7 @@ extension UIColor {
         
         let a = self.components()
         let b = other.components()
-        let c = mixComponents(a, b: b, factor: blendFactor)
+        let c = mixComponents(a: a, b: b, factor: blendFactor)
         
         
         return UIColor(components: c)
@@ -48,7 +48,7 @@ extension UIColor {
         var result = [CGFloat]()
         
         for i in 0..<minCount {
-            let c = mix(a[i], b: b[i], factor: factor)
+            let c = mix(a: a[i], b: b[i], factor: factor)
             result.append(c)
         }
         

@@ -37,13 +37,13 @@ class Obstacles: NSObject {
             if next <= currentTime {
                 createObstacle()
                 
-                nextTimeInterval = calcNextObstacleTime(currentTime)
+                nextTimeInterval = calcNextObstacleTime(currentTime: currentTime)
             }
             
         } else {
             createObstacle()
             
-            nextTimeInterval = calcNextObstacleTime(currentTime)
+            nextTimeInterval = calcNextObstacleTime(currentTime: currentTime)
         }
         
         
@@ -59,22 +59,22 @@ class Obstacles: NSObject {
         let w = CGFloat(arc4random_uniform(maxHeight))/1000.0 + 20.0
         let h = CGFloat(arc4random_uniform(maxHeight))/1000.0 + 20.0
         
-        let randSize = CGSizeMake(w, h)
+        let randSize = CGSize(width: w, height: h)
         
-        let obstacle = SKSpriteNode(color: UIColor.lightGrayColor(), size: randSize)
+        let obstacle = SKSpriteNode(color: UIColor.lightGray, size: randSize)
         
-        obstacle.anchorPoint = CGPointZero
+        obstacle.anchorPoint = CGPoint.zero
         
-        obstacle.physicsBody = SKPhysicsBody(rectangleOfSize: randSize, center: CGPointMake(randSize.width/2, randSize.height/2))
+        obstacle.physicsBody = SKPhysicsBody(rectangleOf: randSize, center: CGPoint(x:randSize.width/2, y:randSize.height/2))
         obstacle.physicsBody!.affectedByGravity = false
-        obstacle.physicsBody!.dynamic = true
+        obstacle.physicsBody!.isDynamic = true
         obstacle.physicsBody!.usesPreciseCollisionDetection = true
         obstacle.physicsBody!.allowsRotation = false
         obstacle.physicsBody!.mass = 1000.0
         obstacle.physicsBody!.collisionBitMask = 2;
         obstacle.physicsBody!.categoryBitMask = 4;
 
-        obstacle.position = CGPointMake(sceneSize.width, 0)
+        obstacle.position = CGPoint(x:sceneSize.width, y:0)
         obstacle.zRotation = 0
         
         
@@ -82,6 +82,6 @@ class Obstacles: NSObject {
         
         let dur = Double(sceneSize.width) / speed
         
-        obstacle.runAction(SKAction.sequence([SKAction.moveTo(CGPointMake(-randSize.width, 0), duration: dur), SKAction.removeFromParent()]))
+        obstacle.run(SKAction.sequence([SKAction.move(to: CGPoint(x:-randSize.width, y:0), duration: dur), SKAction.removeFromParent()]))
     }
 }

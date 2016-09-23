@@ -32,9 +32,9 @@ class GameScene: SKScene, UgoRobotDelegate {
     
     
     
-    override func didMoveToView(view: SKView) {
+    override func didMove(to view: SKView) {
         
-        self.physicsBody = SKPhysicsBody(edgeLoopFromRect: self.frame)
+        self.physicsBody = SKPhysicsBody(edgeLoopFrom: self.frame)
         self.physicsBody!.collisionBitMask = 1
         self.physicsBody!.categoryBitMask = 1;
         fetchLabels()
@@ -57,7 +57,7 @@ class GameScene: SKScene, UgoRobotDelegate {
     }
     
     func fetchLabels() {
-        self.enumerateChildNodesWithName("//label*", usingBlock: { (node:SKNode, boh:UnsafeMutablePointer<ObjCBool>) -> Void in
+        self.enumerateChildNodes(withName: "//label*", using: { (node:SKNode, boh:UnsafeMutablePointer<ObjCBool>) -> Void in
             
             if let label = node as? SKLabelNode {
                 
@@ -86,16 +86,16 @@ class GameScene: SKScene, UgoRobotDelegate {
         label.name = "gameover_label"
         label.fontName = "Helvetica Neue Medium"
         label.fontSize = 64
-        label.fontColor = UIColor.whiteColor()
+        label.fontColor = UIColor.white
         
-        label.position = CGPointMake(512, 440)
+        label.position = CGPoint(x: 512, y:440)
         
         addChild(label)
         
     }
     
     func removeGameOverLabel() {
-        if let label = childNodeWithName("gameover_label") {
+        if let label = childNode(withName: "gameover_label") {
             label.removeFromParent()
         }
     }
@@ -104,7 +104,7 @@ class GameScene: SKScene, UgoRobotDelegate {
         
         robot = UgoRobot(fileName: "UgoScene")
         
-        if let robotNode = childNodeWithName("robot") {
+        if let robotNode = childNode(withName: "robot") {
             robotNode.removeAllChildren()
             robotNode.addChild(robot.root)
             robot.delegate = self
@@ -113,20 +113,20 @@ class GameScene: SKScene, UgoRobotDelegate {
     }
     
     func loadCity() {
-        if let cityNode = childNodeWithName("dynamic_background") {
+        if let cityNode = childNode(withName: "dynamic_background") {
             cityNode.removeAllChildren()
             city = City(fileName: "CityScene", rootNode: cityNode, nLayers: 3)
         }
     }
     
     func loadObstacles() {
-        if let obstaclesNode = childNodeWithName("obstacles") {
+        if let obstaclesNode = childNode(withName: "obstacles") {
             obstaclesNode.removeAllChildren()
             self.obstacles = Obstacles(rootNode: obstaclesNode)
         }
     }
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
         if gameIsOver {
             reset()
@@ -134,25 +134,25 @@ class GameScene: SKScene, UgoRobotDelegate {
             gameIsOver = false
         } else {
         
-            let location = moveToPosition(touches)
+            let location = moveToPosition(touches: touches)
             
-            robot?.grabPosition(location)
-            robot?.startMoving(location)
+            robot?.grabPosition(position: location)
+            robot?.startMoving(position: location)
         }
 
     }
     
-    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         
-        let location = moveToPosition(touches)
+        let location = moveToPosition(touches: touches)
         
-        robot?.grabPosition(location)
-        robot?.move(location)
+        robot?.grabPosition(position: location)
+        robot?.move(position: location)
         
 
     }
     
-    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         robot?.stopMoving()
     }
     
@@ -162,7 +162,7 @@ class GameScene: SKScene, UgoRobotDelegate {
         var location = CGPoint(x: 0,y: 0)
         
         for touch: AnyObject in touches {
-            let loc = touch.locationInNode(self)
+            let loc = touch.location(in: self)
             
             location.x += loc.x
             location.y += loc.y
@@ -178,12 +178,12 @@ class GameScene: SKScene, UgoRobotDelegate {
 
     }
    
-    override func update(currentTime: CFTimeInterval) {
+    override func update(_ currentTime: CFTimeInterval) {
         /* Called before each frame is rendered */
         
-        robot?.update(currentTime)
-        obstacles?.update(currentTime)
-        city?.update(currentTime)
+        robot?.update(currentTime: currentTime)
+        obstacles?.update(currentTime: currentTime)
+        city?.update(currentTime: currentTime)
     }
     
     
@@ -193,7 +193,7 @@ class GameScene: SKScene, UgoRobotDelegate {
         
         if lives > 1 {
             
-            lives--
+            lives -= 1
         
             let oldSensitivity = robot.sensitivity
             
@@ -206,7 +206,7 @@ class GameScene: SKScene, UgoRobotDelegate {
             
         } else {
             
-            lives--
+            lives -= 1
             
             createGameOverLabel();
             

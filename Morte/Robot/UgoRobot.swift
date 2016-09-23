@@ -40,8 +40,8 @@ class UgoRobot: NSObject {
     var left_foot_socket: SKNode!
     var right_foot_socket: SKNode!
     
-    var startPosition = CGPointZero
-    var startSkatePosition = CGPointZero
+    var startPosition = CGPoint.zero
+    var startSkatePosition = CGPoint.zero
     
     var dismembering = false
     
@@ -51,14 +51,14 @@ class UgoRobot: NSObject {
     var flyingStartTime: NSDate?
     var flyTotalTime = 0.0
     
-    var autoStopTimer: NSTimer?
+    var autoStopTimer: Timer?
     
     var t = 0.0
     
    
     required init(fileName: String) {
         
-        if let ugoScene = GameScene.unarchiveFromFile(fileName) {
+        if let ugoScene = GameScene.unarchiveFromFile(file: fileName as NSString) {
             
             root = (ugoScene.children[0] ).copy() as! SKNode
             
@@ -96,11 +96,11 @@ class UgoRobot: NSObject {
                 
             }
             
-            skate = root.childNodeWithName("skate")
+            skate = root.childNode(withName: "skate")
             skate.physicsBody!.usesPreciseCollisionDetection = true
-            torso = root.childNodeWithName("torso")
-            left_foot_socket = skate.childNodeWithName("left_foot_socket")
-            right_foot_socket = skate.childNodeWithName("right_foot_socket")
+            torso = root.childNode(withName: "torso")
+            left_foot_socket = skate.childNode(withName: "left_foot_socket")
+            right_foot_socket = skate.childNode(withName: "right_foot_socket")
             
             skate.constraints = [SKConstraint.zRotation(SKRange(lowerLimit: -1.0, upperLimit: 1.0))]
             
@@ -118,14 +118,14 @@ class UgoRobot: NSObject {
     
     func addGroove()
     {
-        addGrooveTo(arm_hand_right, root: arm_root_right )
-        addGrooveTo(arm_hand_left, root: arm_root_left )
+        addGrooveTo(arm: arm_hand_right, root: arm_root_right )
+        addGrooveTo(arm: arm_hand_left, root: arm_root_left )
 
     }
     
     private var grooving = false
-    private let grooveAmplitude = CGPointMake(10.0, 10.0)
-    private let grooveFreq = CGPointMake(10.0, 10.0)
+    private let grooveAmplitude = CGPoint(x:10.0, y:10.0)
+    private let grooveFreq = CGPoint(x:10.0, y:10.0)
     private let grooveSampling = 0.2
     
     func addGrooveTo(arm: SKNode, root: SKNode) {
@@ -133,14 +133,14 @@ class UgoRobot: NSObject {
         if let rnode = self.root.scene {
             grooving = true
             
-            let delta = CGPointMake(cos(CGFloat(t) * grooveFreq.x) * grooveAmplitude.x , sin(CGFloat(t) * grooveFreq.y) * grooveAmplitude.y )
+            let delta = CGPoint(x:cos(CGFloat(t) * grooveFreq.x) * grooveAmplitude.x , y: sin(CGFloat(t) * grooveFreq.y) * grooveAmplitude.y )
             
-            var pos = arm.convertPoint(CGPointZero, toNode: rnode);
+            var pos = arm.convert(CGPoint.zero, to: rnode);
             pos.x += delta.x
             pos.y += delta.y
             
-            arm.runAction(SKAction.reachTo(pos, rootNode: root, duration: grooveSampling), completion: {
-                self.addGrooveTo(arm, root: root)
+            arm.run(SKAction.reach(to: pos, rootNode: root, duration: grooveSampling), completion: {
+                self.addGrooveTo(arm: arm, root: root)
                 })
             
         }
@@ -159,8 +159,8 @@ class UgoRobot: NSObject {
         grooving = false
         grabbing = true
         
-        arm_hand_right?.runAction(SKAction.reachTo(position, rootNode: arm_root_right, duration: 0.1))
-        arm_hand_left?.runAction(SKAction.reachTo(position, rootNode: arm_root_left, duration: 0.1), completion: {
+        arm_hand_right?.run(SKAction.reach(to: position, rootNode: arm_root_right, duration: 0.1))
+        arm_hand_left?.run(SKAction.reach(to: position, rootNode: arm_root_left, duration: 0.1), completion: {
             if !self.grooving {
                 self.addGroove()
             }
@@ -182,7 +182,7 @@ class UgoRobot: NSObject {
             autoStopTimer = nil
         }
         
-        autoStopTimer = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: Selector("stopMoving"), userInfo: nil, repeats: false)
+        autoStopTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(stopMoving), userInfo: nil, repeats: false)
     }
     
     func stopMoving() {
@@ -201,9 +201,9 @@ class UgoRobot: NSObject {
         let dx = (position.x - startPosition.x) * sensitivity
         let dy = (position.y - startPosition.y) * sensitivity
         
-        let to = CGPointMake(startSkatePosition.x + dx, startSkatePosition.y + dy)
+        let to = CGPoint(x:startSkatePosition.x + dx, y: startSkatePosition.y + dy)
         
-        skate?.runAction(SKAction.moveTo(to, duration: 0.2))
+        skate?.run(SKAction.move(to: to, duration: 0.2))
     }
 
     
@@ -218,16 +218,16 @@ class UgoRobot: NSObject {
         
         if !dismembering {
             
-            torso.position = CGPointMake(skate.position.x - tan(skate.zRotation)*50, skate.position.y + 150 * cos(skate.zRotation)  )
+            torso.position = CGPoint(x:skate.position.x - tan(skate.zRotation)*50, y: skate.position.y + 150 * cos(skate.zRotation)  )
 
             torso.zRotation = skate.zRotation * 0.3
             
             if let rootParent = root.parent {
                 if let rootParentParent = rootParent.parent {
                     
-                    leg_foot_right?.runAction(SKAction.reachTo(right_foot_socket.convertPoint(CGPointZero, toNode: rootParentParent), rootNode: leg_root_right, duration: 0.01))
+                    leg_foot_right?.run(SKAction.reach(to: right_foot_socket.convert(CGPoint.zero, to: rootParentParent), rootNode: leg_root_right, duration: 0.01))
                     
-                    leg_foot_left?.runAction(SKAction.reachTo(left_foot_socket.convertPoint(CGPointZero, toNode: rootParentParent), rootNode: leg_root_left, duration: 0.01))
+                    leg_foot_left?.run(SKAction.reach(to: left_foot_socket.convert(CGPoint.zero, to: rootParentParent), rootNode: leg_root_left, duration: 0.01))
                     
                     
                     
@@ -235,20 +235,20 @@ class UgoRobot: NSObject {
             }
             
             let torsoFrame = torso.calculateAccumulatedFrame()
-            let torsoOrigin = root.scene!.convertPoint(torsoFrame.origin, fromNode: torso.parent!)
+            let torsoOrigin = root.scene!.convert(torsoFrame.origin, from: torso.parent!)
             
-            let torsoGlobalFrame = CGRectMake(torsoOrigin.x, torsoOrigin.y, torsoFrame.width, torsoFrame.height)
+            let torsoGlobalFrame = CGRect(x:torsoOrigin.x, y:torsoOrigin.y, width:torsoFrame.width, height: torsoFrame.height)
             
             if !torsoGlobalFrame.intersects(root.scene!.frame) {
                 
-                skate?.runAction(SKAction.moveTo(CGPointZero, duration: 0.5))
+                skate?.run(SKAction.move(to: CGPoint.zero, duration: 0.5))
                 dismember()
                 
-                NSTimer.scheduledTimerWithTimeInterval(dismemberingDuration * 5, target: self, selector: Selector("notifyDeath"), userInfo: nil, repeats: false)
+                Timer.scheduledTimer(timeInterval: dismemberingDuration * 5, target: self, selector: #selector(UgoRobot.notifyDeath), userInfo: nil, repeats: false)
                 
             }
             
-            if root.scene!.convertPoint(skate.position, fromNode: skate.parent!).y > 50.0 {
+            if root.scene!.convert(skate.position, from: skate.parent!).y > 50.0 {
                 
                 if !flying {
                     flying = true
@@ -261,11 +261,11 @@ class UgoRobot: NSObject {
                     
                     flying = false
                     
-                    let elapsed = NSDate().timeIntervalSinceDate(flyingStartTime!)
+                    let elapsed = Date().timeIntervalSince(flyingStartTime! as Date)
                     
                     flyTotalTime += elapsed
-                                        
-                    delegate?.robotDidFly(self, flyTime: elapsed)
+                    
+                    delegate?.robotDidFly(robot: self, flyTime: elapsed)
                     
                 }
                 
@@ -284,10 +284,10 @@ class UgoRobot: NSObject {
         let sh = UInt32(root.scene!.size.width)
         
         for arm in torso["*"] {
-            explodeNode(arm, horizExtent: sw, vertExtent: sh)
+            explodeNode(arm: arm, horizExtent: sw, vertExtent: sh)
         }
         
-        explodeNode(torso, horizExtent: sw, vertExtent: sh)
+        explodeNode(arm: torso, horizExtent: sw, vertExtent: sh)
 
         
     }
@@ -299,16 +299,16 @@ class UgoRobot: NSObject {
                 return
             }
             
-            node.physicsBody = SKPhysicsBody(rectangleOfSize: node.size, center: node.anchorPoint)
+            node.physicsBody = SKPhysicsBody(rectangleOf: node.size, center: node.anchorPoint)
             node.physicsBody?.mass = 0.1
             
             
             let dx = CGFloat(arc4random() % horizExtent) - CGFloat(horizExtent/2)
             let dy = CGFloat(arc4random() % vertExtent) - CGFloat(vertExtent/2)
             
-            let endPoint = CGPointMake(dx, dy)
+            let endPoint = CGPoint(x:dx, y:dy)
             
-            node.runAction(SKAction.moveTo(endPoint, duration: dismemberingDuration))
+            node.run(SKAction.move(to: endPoint, duration: dismemberingDuration))
             
             
         }
@@ -317,7 +317,7 @@ class UgoRobot: NSObject {
     
     func notifyDeath() {
         
-        delegate?.robotDead(self)
+        delegate?.robotDead(robot: self)
         
     }
 }

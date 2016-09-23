@@ -19,7 +19,7 @@ class City: NSObject {
     var minBuildingWidth = 100.0
     var minBuildingHeight = 300.0
     
-    var buildingColor = UIColor.blackColor()
+    var buildingColor = UIColor.black
     
     var buildingShader = SKShader(fileNamed: "Building.fsh")
 
@@ -47,7 +47,7 @@ class City: NSObject {
         
         self.sceneSize = rootNode.scene!.size
         
-        if let cityScene = GameScene.unarchiveFromFile(fileName) {
+        if let cityScene = GameScene.unarchiveFromFile(file: fileName as NSString) {
             
             for node: SKNode in cityScene.children {
                 
@@ -55,7 +55,7 @@ class City: NSObject {
                 
             }
             
-            backgroundNode = (cityScene as! SKScene).childNodeWithName("background_node") as! SKSpriteNode
+            backgroundNode = (cityScene as! SKScene).childNode(withName: "background_node") as! SKSpriteNode
             
         } else {
             backgroundNode = SKSpriteNode()
@@ -66,7 +66,7 @@ class City: NSObject {
         
         super.init()
         
-        rootNode.enumerateChildNodesWithName("//layer*", usingBlock: { (node:SKNode, boh:UnsafeMutablePointer<ObjCBool>) -> Void in
+        rootNode.enumerateChildNodes(withName: "//layer*", using: { (node:SKNode, boh:UnsafeMutablePointer<ObjCBool>) -> Void in
             
             self.layers[node.name!] = node
             
@@ -80,7 +80,7 @@ class City: NSObject {
             layer.zPosition = CGFloat(-z-1);
             
             
-            createSkyline(0, layer: layer, depth: Double(z)/Double(nLayers-1) )
+            createSkyline(startX: 0, layer: layer, depth: Double(z)/Double(nLayers-1) )
         }
 
     }
@@ -92,7 +92,7 @@ class City: NSObject {
         
         while ( x < sceneSize.width * 2.0 ){
             
-            let building = createBuilding(depth)
+            let building = createBuilding(depth: depth)
             building.position.x = x
             
             layer.addChild(building)
@@ -104,11 +104,11 @@ class City: NSObject {
             x += CGFloat(arc4random_uniform(UInt32((minBuildingWidth/10.0) * 1000.0))) / 1000.0
             
             
-            let slide = SKAction.moveToX(-building.size.width, duration:Double(x / depthToSpeed(depth)))
+            let slide = SKAction.moveTo(x: -building.size.width, duration:Double(x / depthToSpeed(depth: depth)))
             
-            building.runAction(SKAction.sequence([slide, SKAction.removeFromParent()]), completion: { () -> Void in
+            building.run(SKAction.sequence([slide, SKAction.removeFromParent()]), completion: { () -> Void in
                 
-                self.checkAndRebuild(layer, depth: depth)
+                self.checkAndRebuild(layer: layer, depth: depth)
                 
             })
             
@@ -131,17 +131,16 @@ class City: NSObject {
         let w = Double(arc4random_uniform(UInt32((maxBuildingWidth - minBuildingWidth) * (1.0-depth) * 1000.0))) / 1000.0 + minBuildingWidth * (1.0 - (depth * 0.5))
         
         
-        let size = CGSizeMake(CGFloat(w), CGFloat(h * depth + (h/1.4) * (1.0-depth)))
+        let size = CGSize(width: CGFloat(w), height: CGFloat(h * depth + (h/1.4) * (1.0-depth)))
         
         let building = SKSpriteNode(color: buildingColor, size: size)
         
         building.position.y = 0
-        building.anchorPoint = CGPointZero
-                
-        building.shader = createBuildingShader(depth, size: size)
+        building.anchorPoint = CGPoint(x:0, y:0)
+        building.shader = createBuildingShader(depth: depth, size: size)
         
         
-        building.color = backgroundNode.color.colorByMixingWith(building.color, blendFactor: CGFloat(depth*0.9))
+        building.color = backgroundNode.color.colorByMixingWith(other: building.color, blendFactor: CGFloat(depth*0.9))
         
         return building
     }
@@ -196,7 +195,7 @@ class City: NSObject {
         
         if maxRight <= sceneSize.width + CGFloat(maxBuildingWidth) {
             
-            createSkyline(maxRight, layer: layer, depth: depth)
+            createSkyline(startX: maxRight, layer: layer, depth: depth)
             
         }
 
